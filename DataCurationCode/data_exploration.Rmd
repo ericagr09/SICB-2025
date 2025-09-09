@@ -1,0 +1,49 @@
+---
+title: "data_exploration"
+author: "Erica Griffin"
+date: "2025-09-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+df <- read
+```
+
+First, looking at some of the data to see what the weather distributions are. 
+
+Plot 1: Baseline cort ~ average daytime temp
+
+```{r plot1}
+vis1 <- ggplot(initial_vis, aes(x = avgC_capture_day, y = bleed1_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_color_manual(
+    values = c("Male" = "#1F77B4", "Female" = "#AEC7E8")
+  ) +
+  theme_minimal() +
+  geom_vline(xintercept = 18.5, color = "red", linetype = "dotted", linewidth = 1)
+vis1
+```
+
+Plot 2: Baseline cort ~ average 3 day temp
+
+Plot 3: Stress-induced cort ~ average daytime temp
+
+Plot 4: Stress-induced cort ~ average 3 day temp
+
+Plot 5: Dex ~ average daytime temp
+
+Plot 6: Dex ~ average 3 day temp 
+
+
+Next, looking at some covariations of how some of the variables fit together. 
+
+Plot 7: Encounter day of year ~ average dayime temp
+
+Plot 8: Ecounter day of year ~ baseline cort 
+
+Plot 9: Body mass ~ baseline cort 
+
