@@ -49,7 +49,7 @@
           }
             
           if(nrow(sub2) > 0){
-            d_enc$avgC_3day[i] <- mean(sub1$temp_C)
+            d_enc$avgC_3day[i] <- mean(sub2$temp_C)
           }
     }
 
