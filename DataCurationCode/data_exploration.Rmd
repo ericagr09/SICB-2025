@@ -2,48 +2,168 @@
 title: "data_exploration"
 author: "Erica Griffin"
 date: "2025-09-09"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
-df <- read
+library(here)
+df <- read.csv(here("IntermediateData", "9-11-25_data.csv"))
 ```
 
-First, looking at some of the data to see what the weather distributions are. 
+# SICB Project Data Exploration
 
-Plot 1: Baseline cort ~ average daytime temp
+This is a collection of simple plots that I ran of the raw data to begin to observe patterns. I wanted to look at the stress series to see how it's correlating with temperature, as well as look as some co-variations between variables to start to see what may be important. Overall, here are some notes / patterns that I see:
+
+-   similar patterns between plots when using average daytime temperature versus average 3 day temperature. but a lot less observations below the 18.5 deg threshold when using the 3 day average
+
+-   for all sex differences, the lines are so close it seems like there likely is no significant difference, but overall see a similar pattern that baseline cort spikes once temps drop. there are also seems to be a similar pattern when looking at stress-induced cort.
+
+-   I used encounter day of year (not sure if this is an equal measure to clutch initiation date), but it does look like this does have some sort of relationship with baseline cort
+
+-   there seems to be a correlation between body mass and baseline cort
+
+-   I looked at how average daytime temp differs (just base stats) between years - 2013, 2014, 2019, and 2021 look to have colder days and more variation
+
+### Plot 1: Baseline cort \~ average daytime temp
 
 ```{r plot1}
-vis1 <- ggplot(initial_vis, aes(x = avgC_capture_day, y = bleed1_final_cort, color = sex)) +
+vis1 <- ggplot(df, aes(x = avgC_capture_day, y = bleed1_final_cort, color = sex)) +
   geom_point(alpha = 0.5) +     
   coord_cartesian(ylim = c(0, 105)) +
-  geom_smooth(method = "lm", se = FALSE) +
-  scale_color_manual(
-    values = c("Male" = "#1F77B4", "Female" = "#AEC7E8")
-  ) +
-  theme_minimal() +
-  geom_vline(xintercept = 18.5, color = "red", linetype = "dotted", linewidth = 1)
+  geom_smooth(method = "lm", se = FALSE)
 vis1
 ```
 
-Plot 2: Baseline cort ~ average 3 day temp
+```{r plot1.1}
+vis1.1 <- ggplot(df, aes(x = avgC_capture_day, y = bleed1_final_cort)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE)
+vis1.1
+```
 
-Plot 3: Stress-induced cort ~ average daytime temp
+### Plot 2: Baseline cort \~ average 3 day temp
 
-Plot 4: Stress-induced cort ~ average 3 day temp
+```{r vis2}
+vis2 <- ggplot(df, aes(x = avgC_3day, y = bleed1_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE) 
+vis2
+```
 
-Plot 5: Dex ~ average daytime temp
+### Plot 3: Stress-induced cort \~ average daytime temp
 
-Plot 6: Dex ~ average 3 day temp 
+```{r vis3}
+vis3 <- ggplot(df, aes(x = avgC_capture_day, y = bleed2_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE) 
+vis3
+```
 
+### Plot 4: Stress-induced cort \~ average 3 day temp
 
-Next, looking at some covariations of how some of the variables fit together. 
+```{r vis4}
+vis4 <- ggplot(df, aes(x = avgC_3day, y = bleed2_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE) 
+vis4
+```
 
-Plot 7: Encounter day of year ~ average dayime temp
+### Plot 5: Dex \~ average daytime temp
 
-Plot 8: Ecounter day of year ~ baseline cort 
+```{r vis5}
+vis5 <- ggplot(df, aes(x = avgC_capture_day, y = bleed3_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE) 
+vis5
+```
 
-Plot 9: Body mass ~ baseline cort 
+### Plot 6: Dex \~ average 3 day temp
 
+```{r vis6}
+vis6 <- ggplot(df, aes(x = avgC_3day, y = bleed3_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE) 
+vis6
+```
+
+### Plot 7: Encounter day of year \~ average daytime temp
+
+```{r vis7}
+vis7 <- ggplot(df, aes(x = encounter_doy, y = avgC_capture_day)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE)
+vis7
+```
+
+### Plot 8: Encounter day of year \~ baseline cort
+
+```{r vis8}
+vis8 <- ggplot(df, aes(x = encounter_doy, y = bleed1_final_cort)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE)
+vis8
+```
+
+### Plot 9: Body mass \~ baseline cort
+
+```{r vis9}
+vis9 <- ggplot(df, aes(x = mass, y = bleed1_final_cort)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE)
+vis9
+```
+
+### Plot 10: Observation year \~ average daytime temp
+
+```{r vis10}
+vis10 <- ggplot(df, aes(x = factor(exp_year), y = avgC_capture_day)) + 
+  geom_boxplot(fill = "#1f77e4", alpha = 0.7) 
+vis10
+```
+
+### Plot 11: Baseline cort \~ sex
+
+```{r vis11}
+vis11 <- ggplot(df, aes(x = factor(sex), y = bleed1_final_cort)) + 
+  geom_boxplot(fill = "#1f77e4", alpha = 0.7) 
+vis11
+```
+
+### Plot 12: Stress-induced cort \~ sex
+
+```{r vis12}
+vis12 <- ggplot(df, aes(x = factor(sex), y = bleed2_final_cort)) + 
+  geom_boxplot(fill = "#1f77e4", alpha = 0.7) 
+vis12
+```
+
+### Plot 13: Dex \~ sex
+
+```{r vis13}
+vis13 <- ggplot(df, aes(x = factor(sex), y = bleed3_final_cort)) + 
+  geom_boxplot(fill = "#1f77e4", alpha = 0.7) 
+vis13
+```
+
+### Plot 14: Baseline cort \~ mass by sex
+
+```{r plot14}
+vis14 <- ggplot(df, aes(x = mass, y = bleed1_final_cort, color = sex)) +
+  geom_point(alpha = 0.5) +     
+  coord_cartesian(ylim = c(0, 105)) +
+  geom_smooth(method = "lm", se = FALSE)
+vis14
+```
