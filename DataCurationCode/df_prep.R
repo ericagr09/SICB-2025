@@ -63,4 +63,29 @@ initial_vis <- d_enc %>%
     age == 12,
     stress_series_type %in% c("B_S_D", "B_S"))
 
-write.csv(initial_vis, "IntermediateData/9-11-25_data.csv", row.names = FALSE)
+## Filter to make sure that bleed1 latency is under 180 seconds 
+initial_vis <- initial_vis %>%
+  filter(bleed1_latency_sec <= 180)
+
+## Check and remove weird outliers for bleed 2 and bleed 3 times 
+
+datacheck <- initial_vis %>%
+  mutate(
+    disturbance_time_sec = hm(disturbance_time),
+    bleed2_time_sec = hm(bleed2_time),
+    bleed3_time_sec = hm(bleed3_time),
+    bleed2_latency = as.numeric(bleed2_time_sec - disturbance_time_sec, units = "mins"), # getting latency in minutes 
+    bleed3_latency = as.numeric(bleed3_time_sec - disturbance_time_sec, units = "mins"))  %>%
+  filter(bleed2_latency >= 0, # making sure there's no negative samples (4 for bleed 2, and 1 for bleed3)
+         bleed3_latency >= 0)
+
+summary(datacheck$bleed2_latency) # check for anything weird in bleed 2
+
+summary(datacheck$bleed3_latency) # check for anything weird in bleed 2
+
+# looks like there's a sample with a bleed3 latency of 183 and 177, so removing those (encounter key 262126065_2014_171 and 262125900_2014_171 respectively)
+
+initial_vis <- initial_vis %>%
+  filter(!encounter_key %in% c("262125900_2014_171", "262126065_2014_171"))
+
+write.csv(initial_vis, "IntermediateData/9-19-25_data.csv", row.names = FALSE)
