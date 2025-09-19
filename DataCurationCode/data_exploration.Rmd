@@ -1,20 +1,24 @@
 ---
 title: "data_exploration"
 author: "Erica Griffin"
-date: "2025-09-09"
+date: "2025-09-19"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(here)
-df <- read.csv(here("IntermediateData", "9-11-25_data.csv"))
+library(dplyr)
+library(lubridate)
+df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
 ```
 
 # SICB Project Data Exploration
+
+TLDR: should likely include encounter day of year and body mass as covariates. filtering down to 120 for latency does seem to weaken the relationship with overall cort, but also removes ~130 observations. maybe should include year as a covariate as well, since most cold days will likely be from the same year 
 
 This is a collection of simple plots that I ran of the raw data to begin to observe patterns. I wanted to look at the stress series to see how it's correlating with temperature, as well as look as some co-variations between variables to start to see what may be important. Overall, here are some notes / patterns that I see:
 
@@ -27,6 +31,28 @@ This is a collection of simple plots that I ran of the raw data to begin to obse
 -   there seems to be a correlation between body mass and baseline cort
 
 -   I looked at how average daytime temp differs (just base stats) between years - 2013, 2014, 2019, and 2021 look to have colder days and more variation
+
+### Plot 0: Latency ~ cort
+
+```{r plot0}
+
+vis0 <- ggplot(df, aes(x = bleed1_latency_sec, y = bleed1_final_cort)) +
+  geom_point(alpha = 0.5) +     
+  geom_smooth(method = "lm", se = FALSE)
+vis0
+
+```
+Now, going to sample to under 120 to see if that weakens the relationship 
+
+```{r plot0.1}
+df1 <- df %>%
+    filter(bleed1_latency_sec <= 120)
+
+vis01 <- ggplot(df1, aes(x = bleed1_latency_sec, y = bleed1_final_cort)) +
+  geom_point(alpha = 0.5) +     
+  geom_smooth(method = "lm", se = FALSE)
+vis01
+```
 
 ### Plot 1: Baseline cort \~ average daytime temp
 
@@ -167,3 +193,4 @@ vis14 <- ggplot(df, aes(x = mass, y = bleed1_final_cort, color = sex)) +
   geom_smooth(method = "lm", se = FALSE)
 vis14
 ```
+
