@@ -1,0 +1,66 @@
+---
+title: "Initial_analyses"
+author: "Erica Griffin"
+date: "2025-09-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(lme4)
+library(MASS)
+library(lmerTest)
+library(here)
+library(DHARMa)
+df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
+```
+
+## Model 1: Baseline cort ~ average daytime temp + sex + average daytime temp*sex + mass + latency + (1 / nest)
+
+```{r model1}
+model1 <- lmer(bleed1_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + mass + bleed1_latency_sec + (1 | nest_key), data = df )
+summary(model1)
+```
+
+```{r, results='hide'}
+simulationOutput = simulateResiduals(model1, plot = F)
+residuals(simulationOutput, quantileFunction = qnorm)
+```
+
+```{r}
+plot(simulationOutput)
+```
+
+## Model 2: Stress-induced cort ~ average daytime temp + sex + average daytime temp*sex + mass + baseline cort + (1 / nest)
+
+```{r model2}
+model2 <- lmer(bleed2_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_final_cort +mass + (1 | nest_key), data = df )
+summary(model2)
+```
+
+
+```{r, results='hide'}
+simulationOutput = simulateResiduals(model1, plot = F)
+residuals(simulationOutput, quantileFunction = qnorm)
+```
+
+```{r}
+plot(simulationOutput)
+```
+
+## Model 3: Dex ~ average daytime temp + sex + average daytime temp*sex + mass + baseline cort + (1 / nest)
+
+```{r model3}
+model3 <- lmer(bleed3_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_final_cort + mass + (1 | nest_key), data = df )
+summary(model3)
+```
+
+```{r, results='hide'}
+simulationOutput = simulateResiduals(model1, plot = F)
+residuals(simulationOutput, quantileFunction = qnorm)
+```
+
+```{r}
+plot(simulationOutput)
+```
