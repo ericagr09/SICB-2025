@@ -56,7 +56,10 @@
         
 weather_df <-  d_enc %>%
   filter(!individual_treatment %in% c("Cort", "CORT", "cort", "Egg_CORT"),
-             !nest_treatment %in% c("High", "Low", "CORT_XFoster"))
+             !nest_treatment %in% c("High", "Low", "CORT_XFoster", "long", "Long"))
+# check and make sure all cort treatments are removed 
+View(table(weather_df$nest_treatment))
+View(table(weather_df$individual_treatment))
 write.csv(initial_vis, "IntermediateData/weather_df.csv", row.names = FALSE)
 
 ## Filter data out to start initial visualizations
@@ -64,7 +67,7 @@ initial_vis <- d_enc %>%
   filter(
     !is.na(sex),
     !individual_treatment %in% c("Cort", "CORT", "cort", "Egg_CORT"),
-    !nest_treatment %in% c("High", "Low", "CORT_XFoster"), 
+    !nest_treatment %in% c("High", "Low", "CORT_XFoster", "long", "Long"), 
     sex %in% c("Male", "Female"), 
     age == 12,
     stress_series_type %in% c("B_S_D", "B_S"))
