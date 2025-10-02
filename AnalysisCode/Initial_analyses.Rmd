@@ -19,7 +19,7 @@ df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
 ## Model 1: Baseline cort ~ average daytime temp + sex + average daytime temp*sex + mass + latency + (1 / nest)
 
 ```{r model1}
-model1 <- lmer(bleed1_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + mass + bleed1_latency_sec + (1 | nest_key), data = df )
+model1 <- lmer(bleed1_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex  + mass + bleed1_latency_sec + (1 | nest_key), data = df )
 summary(model1)
 ```
 
