@@ -1,5 +1,5 @@
 # SICB-2025
-All data prep, analyses, and statistics for the annual SICB meeting in January 2026. 
+All data prep, analyses, and figures for the annual SICB meeting in January 2026. 
 
 Project title: Environmental effects on corticosterone in nestling tree swallows (Tachycineta bicolor) 
 
