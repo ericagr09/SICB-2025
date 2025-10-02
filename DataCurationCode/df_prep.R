@@ -52,6 +52,12 @@
             d_enc$avgC_3day[i] <- mean(sub2$temp_C)
           }
     }
+## Create dataset for weather ~ cort analysis (not using sex)
+        
+weather_df <-  d_enc %>%
+  filter(!individual_treatment %in% c("Cort", "CORT", "cort", "Egg_CORT"),
+             !nest_treatment %in% c("High", "Low", "CORT_XFoster"))
+write.csv(initial_vis, "IntermediateData/weather_df.csv", row.names = FALSE)
 
 ## Filter data out to start initial visualizations
 initial_vis <- d_enc %>%
