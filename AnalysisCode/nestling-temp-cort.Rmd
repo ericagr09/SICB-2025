@@ -13,6 +13,7 @@ library(MASS)
 library(lmerTest)
 library(here)
 library(DHARMa)
+library(MuMIn)
 weather_df <- read.csv(here("IntermediateData", "weather_df.csv"))
 sex_df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
 ```
@@ -27,15 +28,19 @@ For an individual, the ability to cope with challenges is fundamental to survivi
 
 ## Research Questions:
 
-1)  How does temperature influence nestling corticosterone levels? 2) Do male and female nestlings differ in their corticosterone regulation; and 3) does sex mediate the effect of temperature on the corticosterone response in nestlings?
+1) How does temperature influence nestling corticosterone levels? 2) Do male and female nestlings differ in their corticosterone regulation; and 3) does sex mediate the effect of temperature on the corticosterone response in nestlings?
 
 ## Hypotheses:
 
-1)  Lower temperatures during developmental periods lead to increased corticosterone responses; 2) Corticosterone regulation in nestlings will be mediated by sex; and 3) lower temperatures during developmental periods induce sex-specific effects on the stress response in nestling tree swallows.
+1) Lower temperatures during developmental periods lead to increased corticosterone responses; 2) Corticosterone regulation in nestlings will be mediated by sex; and 3) lower temperatures during developmental periods induce sex-specific effects on the stress response in nestling tree swallows.
 
 ## Predictions:
 
-Hypothesis 1: Temperature will show a negative relationship with baseline and stress-induced corticosterone, with there being an increase in these measures when both average daily temperatures and average 3-day temperatures are lower; Temperature will have no relationship with post-dex corticosterone levels. Hypothesis 2: Males and females will show base differences in their corticosterone regulation, with females showing lower corticosterone across all measures, based on previous studies done in adult birds (baseline corticosterone, stress-induced corticosterone, and post-dex corticosterone). Hypothesis 3:Based on the differing literature on developmental corticosterone in birds, we do not have enough basis to predict a relationship or differential impacts of temperature on corticosterone.
+Hypothesis 1: Temperature will show a negative relationship with baseline and stress-induced corticosterone, with there being an increase in these measures when both average daily temperatures and average 3-day temperatures are lower; Temperature will have no relationship with post-dex corticosterone levels.
+
+Hypothesis 2: Males and females will show base differences in their corticosterone regulation, with females showing lower corticosterone across all measures, based on previous studies done in adult birds (baseline corticosterone, stress-induced corticosterone, and post-dex corticosterone).
+
+Hypothesis 3:Based on the differing literature on developmental corticosterone in birds, we do not have enough basis to predict a relationship or differential impacts of temperature on corticosterone.
 
 ## Variable Descriptions:
 
@@ -63,14 +68,14 @@ Daily average:
 
 ```{r}
 bleed2weather <- lmer(bleed2_final_cort ~ avgC_capture_day + bleed1_final_cort + ( 1 | nest_key), data = weather_df)
-summary(bleed2_weather)
+summary(bleed2weather)
 ```
 
 3 day average:
 
 ```{r}
 bleed2weather2 <- lmer(bleed2_final_cort ~ avgC_3day + bleed1_final_cort + ( 1 | nest_key), data = weather_df)
-summary(bleed2_weather2)
+summary(bleed2weather2)
 ```
 
 ### Post-dex corticosterone
@@ -117,20 +122,20 @@ summary(bleed3_sex)
 ### Baseline corticosterone
 
 ```{r}
-bleed1_int <- lmer(bleed1_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_latency_sec + mass + (1 | nest_key), data = sex_df)
+bleed1_int <- lmer(bleed1_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_latency_sec + (1 | nest_key), data = sex_df)
 summary(bleed1_int)
 ```
 
 ### Stress-induced corticosterone
 
 ```{r}
-bleed2_int <- lmer(bleed2_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_final_cort + mass + (1 | nest_key), data = sex_df)
+bleed2_int <- lmer(bleed2_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_final_cort + (1 | nest_key), data = sex_df)
 summary(bleed2_int)
 ```
 
 ### Post-dex corticosterone
 
 ```{r}
-bleed3_int <- lmer(bleed3_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_final_cort + mass + (1 | nest_key), data = sex_df)
+bleed3_int <- lmer(bleed3_final_cort ~ avgC_capture_day + sex + avgC_capture_day*sex + bleed1_final_cort + (1 | nest_key), data = sex_df)
 summary(bleed3_int)
 ```
