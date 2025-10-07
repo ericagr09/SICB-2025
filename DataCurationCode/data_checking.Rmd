@@ -1,0 +1,93 @@
+---
+title: "data_checking10-07"
+author: "Erica Griffin"
+date: "2025-10-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DHARMa)
+weather_df <- read.csv(here("IntermediateData", "weather_df.csv")) # read in final analysis data
+sex_df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
+```
+
+# SICB Project Data Checking
+
+The purpose of this project is to check data in the intermediary (not included in final analysis document) to determine what the best models are, and what models will fit the data best.
+
+Let's start with some data checking for Hypothesis 1:
+
+Let's check out the distribution of our outcome variable, final baseline cort - looks skewed left, but is still continuous. This means that a log transformation is probably necessary to get models to fit.
+
+```{r}
+hist(weather_df$bleed1_final_cort, main = "Baseline Cort", xlab = "bleed1_final_cort", col = "pink3", breaks = 20)
+```
+First, let's run a base statistical model to see if the model works - the model checking looks pretty bad - the QQ plot with the S-shaped curve show's that there is probably oversdispersion and this model may not be fitting the data great. 
+
+```{r}
+bleed1_weather <- lmer(bleed1_final_cort ~ avgC_capture_day + bleed1_latency_sec + ( 1 | nest_key), data = weather_df)
+summary(bleed1_weather)
+```
+
+```{r}
+simulationOutput = simulateResiduals(bleed1_weather, plot = F)
+residuals(simulationOutput, quantileFunction = qnorm)
+```
+
+```{r}
+plot(simulationOutput)
+testDispersion(simulationOutput)
+```
+
+Let's transform it and see if we can get a model to fit - the model fits much better when cort is log-transformed, so we will continue to do this with base cort for all following models. The QQ plot looks better now - but there is still a pattern in residuals.
+
+```{r}
+weather_df$log_bleed1_final_cort <- log(weather_df$bleed1_final_cort)
+```
+
+```{r}
+log_bleed1_weather <- lmer(log_bleed1_final_cort ~ avgC_capture_day + bleed1_latency_sec + ( 1 | nest_key), data = weather_df)
+summary(log_bleed1_weather)
+```
+
+```{r}
+simulationOutput = simulateResiduals(log_bleed1_weather, plot = F)
+residuals(simulationOutput, quantileFunction = qnorm)
+```
+
+```{r}
+plot(simulationOutput)
+```
+
+```{r}
+plot(simulationOutput)
+testDispersion(simulationOutput)
+```
+
+Now, let's check out the distribution of stress-induced and post-dex cort - looks like the data is still skewed to the left, so will likely need to do the same thing moving forward.
+
+```{r}
+hist(weather_df$bleed2_final_cort, main = "Stress-induced Cort", xlab = "bleed2_final_cort", col = "pink3", breaks = 20)
+```
+
+```{r}
+hist(weather_df$bleed3_final_cort, main = "Post-dex cort", xlab = "bleed3_final_cort", col = "pink3", breaks = 20)
+```
+
+Okay, let's just quickly log-transform stress-induced cort and see if the models fit better - looks better with the QQ plot, but the pattern still exists in the residuals. 
+```{r}
+weather_df$log_bleed2_final_cort <- log(weather_df$bleed2_final_cort)
+bleed2weather <- lmer(log_bleed2_final_cort ~ avgC_capture_day + bleed1_final_cort + ( 1 | nest_key), data = weather_df)
+summary(bleed2weather)
+```
+
+```{r}
+simulationOutput = simulateResiduals(bleed1_weather, plot = F)
+residuals(simulationOutput, quantileFunction = qnorm)
+```
+
+```{r}
+plot(simulationOutput)
+testDispersion(simulationOutput)
+```
