@@ -34,7 +34,9 @@ For an individual, the ability to cope with challenges is fundamental to survivi
 
 ## Research Questions:
 
-1)  How does temperature influence nestling corticosterone levels? 2) Do male and female nestlings differ in their corticosterone regulation; and 3) does sex mediate the effect of temperature on the corticosterone response in nestlings?
+1)  How does temperature influence nestling corticosterone levels?
+2)  2) Do male and female nestlings differ in their corticosterone regulation?
+3)  3) does sex mediate the effect of temperature on the corticosterone response in nestlings?
 
 ## Hypotheses:
 
@@ -50,11 +52,19 @@ Hypothesis 2: Males and females will show base differences in their corticostero
 
 Hypothesis 3:Females will showcase a stronger corticosterone response (across all measures) in response to lower temperatures, consistent with prior work in our population showing that females may more sensitive to some stressors
 
+## Initial results:
+
+Hypothesis 1: It looks like that baseline cort is related to average daily temperature, with lower temperatures resulting in higher baseline cort. There is no (significant) effect of daily temperature on stress-induced cort or post-dex cort.
+
+Hypothesis 2: There is no support in either direction to indicate that nestling cort differs based on sex.
+
+Hypothesis 3: There is no significant support suggesting that either females nor males showcase a stronger corticosterone response across all measures in response to temperature.
+
 # Question 1: How does temperature influence nestling corticosterone levels?
 
-Here, we are running analyses with both average temperature of capture day and average 3 day temperature (before capture) to see what is a better predictor. In general, it looks like there is no huge difference, but daily temperature may be a slightly better predictor based on the co-efficient values.
+Here, we are running analyses with both average temperature of capture day and average 3 day temperature (before capture) to see what is a better predictor. In general, it looks like there is no huge difference, but daily temperature may be a slightly better predictor based on the co-efficient values. Going forward, I will continue to use avereage daily temperature to test Hypothesis 2 and 3.
 
-### Baseline corticosterone
+## Baseline corticosterone
 
 Daily average:
 
@@ -151,7 +161,6 @@ bleed2_sex <- lmer(log_bleed2_final_cort ~ sex + log_bleed1_final_cort + ( 1 | n
 summary(bleed2_sex)
 ```
 
-
 ```{r}
 simulationOutput = simulateResiduals(bleed2_sex, plot = F)
 plot(simulationOutput)
@@ -164,7 +173,6 @@ testDispersion(simulationOutput)
 bleed3_sex <- lmer(log_bleed3_final_cort ~ sex + log_bleed1_final_cort + ( 1 | nest_key), data = sex_df)
 summary(bleed3_sex)
 ```
-
 
 ```{r}
 simulationOutput = simulateResiduals(bleed3_sex, plot = F)
