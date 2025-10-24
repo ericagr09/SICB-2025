@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(gamm4)
 library(dplyr)
 library(lme4)
 library(MASS)
@@ -35,8 +36,10 @@ For an individual, the ability to cope with challenges is fundamental to survivi
 ## Research Questions:
 
 1)  How does temperature influence nestling corticosterone levels?
-2)  2) Do male and female nestlings differ in their corticosterone regulation?
-3)  3) does sex mediate the effect of temperature on the corticosterone response in nestlings?
+2)  
+    2)  Do male and female nestlings differ in their corticosterone regulation?
+3)  
+    3)  does sex mediate the effect of temperature on the corticosterone response in nestlings?
 
 ## Hypotheses:
 

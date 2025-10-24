@@ -1,0 +1,214 @@
+---
+title: "nestling-temp-cort-final"
+author: "Erica Griffin"
+date: "2025-10-20"
+output: html_document
+---
+
+# Environmental effects on corticosterone in nestling tree swallows
+
+### Last updated: October 20, 2025
+
+## Abstract:
+
+For an individual, the ability to cope with challenges is fundamental to surviving in a changing environment. The corticosterone stress response has a major impact on the ability of an organism to react to the challenges of rapid environmental change. Previous research has shown that when faced with a prolonged cold snap, adult female tree swallows increase their baseline and stress-induced corticosterone levels, and that individual variation in corticosterone levels predicts reproductive success during challenges. Tree swallows are advancing reproduction with warming springs and are more likely to encounter cold snaps during breeding, which can reduce reproductive success. Here, using data from a long-term study of free-living tree swallows collected from 2013-2025, we show that nestling tree swallows show an immediate increase in corticosterone levels when ambient temperatures fall below a threshold of 18.5°C, which has previously been identified as the threshold at which insect availability begins to decline. As a result of earlier reproduction, nestlings are more likely to experience cold snaps during development, making it especially important to understand their effects. Ongoing work is also testing whether male and female nestlings display dimorphism in their corticosterone responses to further our understanding of how nestlings are responding to thermal environmental shifts.
+
+## Research Questions:
+
+1)  How does temperature influence nestling corticosterone levels?
+2)  Do male and female nestlings differ in their corticosterone regulation?
+3)  Does sex mediate the effect of temperature on the corticosterone response in nestlings?
+
+## Hypotheses:
+
+1)  Lower temperatures during developmental periods lead to increased corticosterone responses;
+2)  Corticosterone regulation in nestlings will be mediated by sex; and
+3)  lower temperatures during developmental periods induce sex-specific effects on the stress response in nestling tree swallows.
+
+## Predictions:
+
+Hypothesis 1: Temperature will show a negative relationship with baseline and stress-induced corticosterone, with there being an increase in these measures when both average daily temperatures and average 3-day temperatures are lower; Temperature will have no relationship with post-dex corticosterone levels.
+
+Hypothesis 2: Males and females will show base differences in their corticosterone regulation, with females showing lower corticosterone across all measures, based on previous studies done in adult birds (baseline corticosterone, stress-induced corticosterone, and post-dex corticosterone).
+
+Hypothesis 3:Females will showcase a stronger corticosterone response (across all measures) in response to lower temperatures, consistent with prior work in our population showing that females may more sensitive to some stressors. 
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+library(gamm4)
+library(dplyr)
+library(lme4)
+library(MASS)
+library(lmerTest)
+library(here)
+library(DHARMa)
+library(MuMIn)
+library(mgcv)
+library(ggplot2)
+weather_df <- read.csv(here("IntermediateData", "weather_df.csv"))
+weather_df$log_bleed1_final_cort <- log(weather_df$bleed1_final_cort)
+weather_df$log_bleed2_final_cort <- log(weather_df$bleed2_final_cort)
+weather_df$log_bleed3_final_cort <- log(weather_df$bleed3_final_cort)
+sex_df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
+sex_df$log_bleed1_final_cort <- log(sex_df$bleed1_final_cort)
+sex_df$log_bleed2_final_cort <- log(sex_df$bleed2_final_cort)
+sex_df$log_bleed3_final_cort <- log(sex_df$bleed3_final_cort)
+sex_df$sex <- as.factor(sex_df$sex) # convert sex to a factor for GAMMS
+```
+
+# Question 1: How does temperature influence nestling corticosterone levels?
+
+In this section, I am running GAMM models, as based on prior checking, the effect of temperature on corticosterone is non-linear, and a smooth term fits the data better than a linear term. Average daily temperature is used as the predictor, as this seemed to have a slightly stronger effect than average 3 day temperature, and all corticosterone measures have been log-transformed to conform to a normal distribution better. 
+
+## Baseline corticosterone
+
+```{r}
+bleed1_weather_gamm4 <- gamm4( # run gamm model 
+  log_bleed1_final_cort ~ s(avgC_capture_day) + (bleed1_latency_sec),
+  random = ~(1 | nest_key),
+  data = weather_df
+)
+summary(bleed1_weather_gamm4$gam) # view results of gam 
+summary(bleed1_weather_gamm4$mer) # view random effects 
+plot(bleed1_weather_gamm4$gam, pages = 1) # view smooth term 
+k.check(bleed1_weather_gamm4$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed1_weather_gamm4$gam) # check residuals to make sure model is normal 
+
+```
+
+## Stress-induced corticosterone
+
+```{r}
+bleed2_weather_gamm4 <- gamm4( # run gamm model 
+  log_bleed2_final_cort ~ s(avgC_capture_day) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = weather_df
+)
+summary(bleed2_weather_gamm4$gam) # view results of gam 
+summary(bleed2_weather_gamm4$mer) # view random effects 
+plot(bleed2_weather_gamm4$gam, pages = 1) # view smooth term 
+k.check(bleed2_weather_gamm4$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed2_weather_gamm4$gam) # check residuals to make sure model is normal 
+```
+
+
+## Dex corticosterone
+
+```{r}
+bleed3_weather_gamm4 <- gamm4( # run gamm model 
+  log_bleed3_final_cort ~ s(avgC_capture_day) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = weather_df
+)
+summary(bleed3_weather_gamm4$gam) # view results of gam 
+summary(bleed3_weather_gamm4$mer) # view random effects 
+plot(bleed3_weather_gamm4$gam, pages = 1) # view smooth term
+k.check(bleed3_weather_gamm4$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed3_weather_gamm4$gam) # check residuals to make sure model is normal  
+```
+
+# Question 2: Do male and female nestlings differ in their corticosterone regulation
+
+Here, I am just using regular linear mixed models to determine if there are any sex differences. 
+
+## Baseline corticosterone
+
+
+```{r}
+bleed1_sex <- lmer(log_bleed1_final_cort ~ sex + bleed1_latency_sec + ( 1 | nest_key), data = sex_df)
+summary(bleed1_sex)
+```
+
+```{r}
+simulationOutput = simulateResiduals(bleed1_sex, plot = F)
+plot(simulationOutput)
+testDispersion(simulationOutput)
+```
+
+## Stress-induced corticosterone
+
+```{r}
+bleed2_sex <- lmer(log_bleed2_final_cort ~ sex + log_bleed1_final_cort + ( 1 | nest_key), data = sex_df)
+summary(bleed2_sex)
+```
+
+```{r}
+simulationOutput = simulateResiduals(bleed2_sex, plot = F)
+plot(simulationOutput)
+testDispersion(simulationOutput)
+```
+
+## Post-dex corticosterone
+
+```{r}
+bleed3_sex <- lmer(log_bleed3_final_cort ~ sex + log_bleed1_final_cort + ( 1 | nest_key), data = sex_df)
+summary(bleed3_sex)
+```
+
+```{r}
+simulationOutput = simulateResiduals(bleed3_sex, plot = F)
+plot(simulationOutput)
+testDispersion(simulationOutput)
+```
+
+# Question 3: Does sex mediate the effect of temperature on the corticosterone response in nestlings?
+
+Here, I will be using GAM agains to fit that smooth term effect of temp on cort, to stay consistent with the first set of models. 
+
+## Baseline corticosterone
+
+```{r}
+bleed1_int_gamm <- gamm4(
+  log_bleed1_final_cort ~ sex + s(avgC_capture_day, by = sex) + (bleed1_latency_sec),
+  random = ~(1 | nest_key),
+  data = sex_df)
+summary(bleed1_int_gamm$gam)
+summary(bleed1_int_gamm$mer)
+plot(bleed1_int_gamm$gam, pages = 1) # view smooth term 
+
+k.check(bleed1_int_gamm$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed1_int_gamm$gam) # check residuals to make sure model is normal 
+```
+
+## Stress-induced corticosterone
+
+```{r}
+bleed2_int_gamm <- gamm4(
+  log_bleed2_final_cort ~ sex + s(avgC_capture_day, by = sex) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = sex_df)
+summary(bleed2_int_gamm$gam)
+summary(bleed2_int_gamm$mer)
+plot(bleed2_int_gamm$gam, pages = 1) # view smooth term 
+
+k.check(bleed2_int_gamm$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed2_int_gamm$gam) # check residuals to make sure model is normal 
+```
+
+## Post-dex corticosterone
+
+```{r}
+bleed3_int_gamm <- gamm4(
+  log_bleed3_final_cort ~ sex + s(avgC_capture_day, by = sex) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = sex_df)
+summary(bleed3_int_gamm$gam)
+summary(bleed3_int_gamm$mer)
+plot(bleed3_int_gamm$gam, pages = 1) # view smooth term 
+
+
+k.check(bleed3_int_gamm$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed3_int_gamm$gam) # check residuals to make sure model is normal 
+```
+
+
+
+
