@@ -1,0 +1,155 @@
+---
+title: "nestling-temp-cort-GAMM"
+author: "Erica Griffin"
+date: "2025-10-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(gamm4)
+library(dplyr)
+library(lme4)
+library(MASS)
+library(lmerTest)
+library(here)
+library(DHARMa)
+library(MuMIn)
+library(mgcv)
+library(ggplot2)
+weather_df <- read.csv(here("IntermediateData", "weather_df.csv"))
+weather_df$log_bleed1_final_cort <- log(weather_df$bleed1_final_cort)
+weather_df$log_bleed2_final_cort <- log(weather_df$bleed2_final_cort)
+weather_df$log_bleed3_final_cort <- log(weather_df$bleed3_final_cort)
+sex_df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
+sex_df$log_bleed1_final_cort <- log(sex_df$bleed1_final_cort)
+sex_df$log_bleed2_final_cort <- log(sex_df$bleed2_final_cort)
+sex_df$log_bleed3_final_cort <- log(sex_df$bleed3_final_cort)
+sex_df$sex <- as.factor(sex_df$sex) # convert sex to a factor for GAMMS
+```
+
+First, I'm going to run both an extremely simple linear and gam to see if we can visualize to double check that a gamm is the right move for both baseline, stress-induced cort, and dex. 
+```{r}
+test_data <- weather_df %>%
+  filter(!is.na(log_bleed1_final_cort), !is.na(avgC_capture_day)) # make sure length of df matches what is being fed into the models 
+
+
+lm <- lm(log_bleed1_final_cort ~  avgC_capture_day, data = test_data) # base lm
+gam <- gamm4(log_bleed1_final_cort ~ s(avgC_capture_day), data = test_data) # base gam
+
+test <- ggplot(data = test_data, aes(y = log_bleed1_final_cort, x = avgC_capture_day)) + # add lm to raw data (using code from https://r.qcbs.ca/workshop08/book-en/introduction-to-gams.html)
+    geom_point() + geom_line(aes(y = fitted(lm)), colour = "red", 
+    size = 1.2) + theme_bw()
+
+test1 <- test + geom_line(aes(y = fitted(gam$gam)), # gam to the plot
+    colour = "blue", size = 1.2)
+
+test1
+```
+stress induced
+```{r}
+test_data1 <- weather_df %>%
+  filter(!is.na(log_bleed2_final_cort), !is.na(avgC_capture_day)) # make sure length of df matches what is being fed into the models 
+
+
+lm1 <- lm(log_bleed2_final_cort ~  avgC_capture_day, data = test_data1) # base lm
+gam1 <- gamm4(log_bleed2_final_cort ~ s(avgC_capture_day), data = test_data1) # base gam
+
+test <- ggplot(data = test_data1, aes(y = log_bleed2_final_cort, x = avgC_capture_day)) + # add lm to raw data (using code from https://r.qcbs.ca/workshop08/book-en/introduction-to-gams.html)
+    geom_point() + geom_line(aes(y = fitted(lm1)), colour = "red", 
+    size = 1.2) + theme_bw()
+
+test2 <- test + geom_line(aes(y = fitted(gam1$gam)), # gam to the plot
+    colour = "blue", size = 1.2)
+
+test2
+```
+
+```{r}
+test_data2 <- weather_df %>%
+  filter(!is.na(log_bleed3_final_cort), !is.na(avgC_capture_day)) # make sure length of df matches what is being fed into the models 
+
+
+lm2 <- lm(log_bleed3_final_cort ~  avgC_capture_day, data = test_data2) # base lm
+gam2 <- gamm4(log_bleed3_final_cort ~ s(avgC_capture_day), data = test_data2) # base gam
+
+test <- ggplot(data = test_data2, aes(y = log_bleed3_final_cort, x = avgC_capture_day)) + # add lm to raw data (using code from https://r.qcbs.ca/workshop08/book-en/introduction-to-gams.html)
+    geom_point() + geom_line(aes(y = fitted(lm2)), colour = "red", 
+    size = 1.2) + theme_bw()
+
+test3 <- test + geom_line(aes(y = fitted(gam2$gam)), # gam to the plot
+    colour = "blue", size = 1.2)
+
+test3
+```
+
+
+```{r}
+bleed1_weather_gamm4 <- gamm4( # run gamm model 
+  log_bleed1_final_cort ~ s(avgC_capture_day) + (bleed1_latency_sec),
+  random = ~(1 | nest_key),
+  data = weather_df
+)
+summary(bleed1_weather_gamm4$gam) # view results of gam 
+summary(bleed1_weather_gamm4$mer) # view random effects 
+plot(bleed1_weather_gamm4$gam, pages = 1) # view smooth term 
+k.check(bleed1_weather_gamm4$gam) # check the k to see if the model is "wiggly" enough 
+par(mfrow = c(2, 2))
+gam.check(bleed1_weather_gamm4$gam) # check residuals to make sure model is normal 
+
+```
+
+
+```{r}
+bleed2_weather_gamm4 <- gamm4( # run gamm model 
+  log_bleed2_final_cort ~ s(avgC_capture_day) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = weather_df
+)
+summary(bleed2_weather_gamm4$gam) # view results of gam 
+summary(bleed2_weather_gamm4$mer) # view random effects 
+plot(bleed2_weather_gamm4$gam, pages = 1) # view smooth term 
+```
+
+```{r}
+bleed3_weather_gamm4 <- gamm4( # run gamm model 
+  log_bleed3_final_cort ~ s(avgC_capture_day) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = weather_df
+)
+summary(bleed3_weather_gamm4$gam) # view results of gam 
+summary(bleed3_weather_gamm4$mer) # view random effects 
+plot(bleed3_weather_gamm4$gam, pages = 1) # view smooth term 
+```
+
+```{r}
+bleed1_int_gamm <- gamm4(
+  log_bleed1_final_cort ~ sex + s(avgC_capture_day, by = sex) + (bleed1_latency_sec),
+  random = ~(1 | nest_key),
+  data = sex_df)
+summary(bleed1_int_gamm$gam)
+summary(bleed1_int_gamm$mer)
+plot(bleed1_int_gamm$gam, pages = 1) # view smooth term 
+```
+
+```{r}
+bleed2_int_gamm <- gamm4(
+  log_bleed2_final_cort ~ sex + s(avgC_capture_day, by = sex) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = sex_df)
+summary(bleed2_int_gamm$gam)
+summary(bleed2_int_gamm$mer)
+plot(bleed2_int_gamm$gam, pages = 1) # view smooth term 
+```
+
+
+```{r}
+bleed3_int_gamm <- gamm4(
+  log_bleed3_final_cort ~ sex + s(avgC_capture_day, by = sex) + (log_bleed1_final_cort),
+  random = ~(1 | nest_key),
+  data = sex_df)
+summary(bleed3_int_gamm$gam)
+summary(bleed3_int_gamm$mer)
+plot(bleed3_int_gamm$gam, pages = 1) # view smooth term 
+```
+
