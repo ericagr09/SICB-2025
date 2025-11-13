@@ -1,13 +1,13 @@
 ---
 title: "nestling-temp-cort-final"
 author: "Erica Griffin"
-date: "2025-10-20"
+date: "2025-11-23"
 output: html_document
 ---
 
 # Environmental effects on corticosterone in nestling tree swallows
 
-### Last updated: October 20, 2025
+### Last updated: November 13, 2025
 
 ## Abstract:
 
@@ -35,27 +35,29 @@ Hypothesis 3:Females will showcase a stronger corticosterone response (across al
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(echo = TRUE)
-library(gamm4)
-library(dplyr)
-library(lme4)
-library(MASS)
-library(lmerTest)
-library(here)
-library(DHARMa)
-library(MuMIn)
-library(mgcv)
-library(ggplot2)
-weather_df <- read.csv(here("IntermediateData", "weather_df.csv"))
-weather_df$log_bleed1_final_cort <- log(weather_df$bleed1_final_cort)
+pacman::p_load(gamm4, dplyr, lme4, MASS, lmerTest, here, DHARMa, MuMIn, mgcv, ggplot2, gratia, patchwork, ggeffects) # load packages 
+
+weather_df <- read.csv(here("IntermediateData", "weather_df.csv")) # load in data that was produced by scripts in the DataCuration code 
+weather_df$log_bleed1_final_cort <- log(weather_df$bleed1_final_cort) # log transform cort measures 
 weather_df$log_bleed2_final_cort <- log(weather_df$bleed2_final_cort)
 weather_df$log_bleed3_final_cort <- log(weather_df$bleed3_final_cort)
-sex_df <- read.csv(here("IntermediateData", "9-19-25_data.csv"))
-sex_df$log_bleed1_final_cort <- log(sex_df$bleed1_final_cort)
+sex_df <- read.csv(here("IntermediateData", "9-19-25_data.csv")) # load in data that was produced by scripts in the DataCuration code  
+
+sex <- factor(sex_df$sex)
+sex_df$log_bleed1_final_cort <- log(sex_df$bleed1_final_cort) # log transform cort 
 sex_df$log_bleed2_final_cort <- log(sex_df$bleed2_final_cort)
 sex_df$log_bleed3_final_cort <- log(sex_df$bleed3_final_cort)
 sex_df$sex <- as.factor(sex_df$sex) # convert sex to a factor for GAMMS
+
+ # set colors for figures : ) from the color blind friendly palette Accent (https://journal.r-project.org/articles/RJ-2023-071/; https://emilhvitfeldt.github.io/r-color-palettes/discrete/RColorBrewer/Accent/)
+
+base_color <- "#386CB0FF"
+stress_color <- "#BEAED4FF"
+dex_color <- "#FDC086FF"
+
+
+male_color = "#BEAED4FF" # maybe change these? 
+female_color = "#BF5B17FF"
 ```
 
 # Question 1: How does temperature influence nestling corticosterone levels?
@@ -79,6 +81,23 @@ gam.check(bleed1_weather_gamm4$gam) # check residuals to make sure model is norm
 
 ```
 
+```{r}
+
+base_cort <- draw(bleed1_weather_gamm4$gam, term = "avgC_capture_day")$data %>%
+  dplyr::select(avgC_capture_day = avgC_capture_day, fit = .estimate, se = .se, cil = .lower_ci, ciu = .upper_ci)
+
+base_cort_plot <- ggplot() +
+  geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
+  geom_line(data = base_cort, aes(x = avgC_capture_day, y = fit), color = base_color, linetype = "solid", size = 0.3) +
+  geom_ribbon(data = base_cort, aes(x = avgC_capture_day, ymin = cil, ymax = ciu), fill = base_color, alpha = 0.4) +
+   labs(x = NULL, y = "Predicted Partial Baseline Corticosterone") +
+  theme_classic() +
+  scale_x_continuous(breaks = seq(0, 30, 10)) +
+  xlim(c(13, 30)) +
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+base_cort_plot
+```
+
 ## Stress-induced corticosterone
 
 ```{r}
@@ -93,6 +112,24 @@ plot(bleed2_weather_gamm4$gam, pages = 1) # view smooth term
 k.check(bleed2_weather_gamm4$gam) # check the k to see if the model is "wiggly" enough 
 par(mfrow = c(2, 2))
 gam.check(bleed2_weather_gamm4$gam) # check residuals to make sure model is normal 
+```
+
+```{r}
+
+stress_cort <- draw(bleed2_weather_gamm4$gam, term = "avgC_capture_day")$data %>%
+  dplyr::select(avgC_capture_day = avgC_capture_day, fit = .estimate, se = .se, cil = .lower_ci, ciu = .upper_ci)
+
+stress_cort_plot <- ggplot() +
+  geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
+  geom_line(data = stress_cort, aes(x = avgC_capture_day, y = fit), color = stress_color, linetype = "solid", size = 0.3) +
+  geom_ribbon(data = stress_cort, aes(x = avgC_capture_day, ymin = cil, ymax = ciu), fill = stress_color, alpha = 0.4) +
+  labs(x = NULL, y = "Predicted Partial Stress-Induced Corticosterone") +
+  theme_classic() +
+  scale_x_continuous(breaks = seq(0, 30, 10)) +
+  xlim(c(13, 30)) +
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+
+stress_cort_plot
 ```
 
 
@@ -112,12 +149,42 @@ par(mfrow = c(2, 2))
 gam.check(bleed3_weather_gamm4$gam) # check residuals to make sure model is normal  
 ```
 
+```{r}
+
+dex_cort <- draw(bleed3_weather_gamm4$gam, term = "avgC_capture_day")$data %>%
+  dplyr::select(avgC_capture_day = avgC_capture_day, fit = .estimate, se = .se, cil = .lower_ci, ciu = .upper_ci)
+
+dex_cort_plot <- ggplot() +
+  geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
+  geom_line(data = dex_cort, aes(x = avgC_capture_day, y = fit), color = dex_color, linetype = "solid", size = 0.3) +
+  geom_ribbon(data = dex_cort, aes(x = avgC_capture_day, ymin = cil, ymax = ciu), fill = dex_color, alpha = 0.4) +
+  labs(x = NULL, y = "Predicted Partial Post-Dex Corticosterone") +
+  theme_classic() +
+  scale_x_continuous(breaks = seq(0, 30, 10)) +
+  xlim(c(13, 30)) +
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+
+dex_cort_plot
+
+```
+
+Combine all plots together
+```{r}
+combined <- base_cort_plot | stress_cort_plot | dex_cort_plot  # one row
+final_figure1 <- combined + plot_annotation(
+  caption = ("Average Daily Temperature (°C)")
+) &
+theme(
+    plot.caption = element_text(hjust = 0.5, size = 14) 
+  )
+final_figure1
+```
+
 # Question 2: Do male and female nestlings differ in their corticosterone regulation
 
 Here, I am just using regular linear mixed models to determine if there are any sex differences. 
 
 ## Baseline corticosterone
-
 
 ```{r}
 bleed1_sex <- lmer(log_bleed1_final_cort ~ sex + bleed1_latency_sec + ( 1 | nest_key), data = sex_df)
@@ -176,6 +243,28 @@ par(mfrow = c(2, 2))
 gam.check(bleed1_int_gamm$gam) # check residuals to make sure model is normal 
 ```
 
+```{r}
+pred_base <- ggpredict(bleed1_int_gamm, 
+                         terms = c("avgC_capture_day [all]", "sex [Female, Male]"))
+
+base_int <- ggplot(pred_base, aes(x = x, y = predicted, color = group, fill = group)) +
+  geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
+  geom_line(size = 1.0) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, color = NA) +
+  labs(x = NULL, y = "Predicted Baseline Corticosterone") +
+  theme_classic() +
+  theme(
+    panel.grid = element_blank(),
+    axis.text  = element_text(size = 12),
+    axis.title = element_text(size = 14),
+    legend.title = element_blank(),
+    legend.position = "top") +
+  scale_color_manual(values = c(Female = female_color, Male = male_color))+
+  scale_fill_manual(values = c(Female = female_color, Male = male_color))+
+  scale_x_continuous(breaks = seq(13, 30, 5))
+base_int
+```
+
 ## Stress-induced corticosterone
 
 ```{r}
@@ -190,6 +279,32 @@ plot(bleed2_int_gamm$gam, pages = 1) # view smooth term
 k.check(bleed2_int_gamm$gam) # check the k to see if the model is "wiggly" enough 
 par(mfrow = c(2, 2))
 gam.check(bleed2_int_gamm$gam) # check residuals to make sure model is normal 
+```
+
+```{r}
+
+pred_stress <- ggpredict(bleed2_int_gamm, 
+                       terms = c("avgC_capture_day [all]", "sex [Female, Male]"))
+
+
+
+stress_int <- ggplot(pred_stress, aes(x = x, y = predicted, color = group, fill = group)) +
+  geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
+  geom_line(size = 1.0) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, color = NA) +
+  labs(x = NULL, y = "Predicted Stress-Induced Corticosterone") +
+  theme_classic() +
+  theme(panel.grid = element_blank(),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = "top") +
+  scale_color_manual(values = c(Female = female_color, Male = male_color))+
+  scale_fill_manual(values = c(Female = female_color, Male = male_color))+
+  scale_x_continuous(breaks = seq(13, 30, 5))
+
+stress_int
+
 ```
 
 ## Post-dex corticosterone
@@ -209,6 +324,157 @@ par(mfrow = c(2, 2))
 gam.check(bleed3_int_gamm$gam) # check residuals to make sure model is normal 
 ```
 
+```{r}
+
+pred_dex <- ggpredict(bleed3_int_gamm, 
+                         terms = c("avgC_capture_day [all]", "sex [Female, Male]"))
 
 
+
+dex_int <- ggplot(pred_dex, aes(x = x, y = predicted, color = group, fill = group)) +
+  geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
+  geom_line(size = 1.0) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, color = NA) +
+  labs(x = NULL, y = "Predicted Post-dex Corticosterone") +
+  theme_classic() +
+  theme(panel.grid = element_blank(),
+        axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = "top") +
+  scale_color_manual(values = c(Female = female_color, Male = male_color))+
+  scale_fill_manual(values = c(Female = female_color, Male = male_color))+
+  scale_x_continuous(breaks = seq(13, 30, 5))
+
+dex_int
+```
+
+Combine all together
+
+```{r}
+
+combined2 <- base_int | stress_int | dex_int  # one row
+
+final_figure2 <- combined2 + plot_annotation(
+  caption = ("Average Daily Temperature (°C)")
+) &
+  theme(
+    plot.caption = element_text(hjust = 0.5, size = 14) 
+  )
+final_figure2
+
+```
+
+### Female / Male Comparision Plots 
+
+Now, creating a figure to compare the smooths in the interaction models, based on this tutorial: this tutorial:https://fromthebottomoftheheap.net/2017/10/11/difference-splines-i/ 
+
+Run function from above site: 
+
+```{r}
+smooth_diff <- function(model, newdata, f1, f2, var, alpha = 0.05,
+                        unconditional = FALSE) {
+  fac <- as.character(newdata[[var]]) # added this to convert sex to a character to allow for comparision
+  xp <- predict(model, newdata = newdata, type = 'lpmatrix')
+  c1 <- grepl(f1, colnames(xp))
+  c2 <- grepl(f2, colnames(xp))
+  r1 <- fac == f1 # modified this
+  r2 <- fac == f2
+  ## difference rows of xp for data from comparison
+  X <- xp[r1, ] - xp[r2, ]
+  ## zero out cols of X related to splines for other lochs
+  X[, ! (c1 | c2)] <- 0
+  ## zero out the parametric cols
+  X[, !grepl('^s\\(', colnames(xp))] <- 0
+  dif <- X %*% coef(model)
+  se <- sqrt(rowSums((X %*% vcov(model, unconditional = unconditional)) * X))
+  crit <- qt(alpha/2, df.residual(model), lower.tail = FALSE)
+  upr <- dif + (crit * se)
+  lwr <- dif - (crit * se)
+  data.frame(pair = paste(f1, f2, sep = '-'),
+             diff = dif,
+             se = se,
+             upper = upr,
+             lower = lwr)
+}
+```
+
+Create dataframe to be fed into the function:
+
+```{r}
+
+pdat_base <- expand.grid(
+  avgC_capture_day = seq(13.5, 28.5, length = 400),
+  sex = c("Female", "Male"),
+  bleed1_latency_sec = mean(sex_df$bleed1_latency_sec, na.rm = TRUE)
+)
+
+pdat_stress_dex <- expand.grid(
+  avgC_capture_day = seq(13.5, 28.5, length = 400),
+  sex = c("Female", "Male"),
+  log_bleed1_final_cort = mean(sex_df$log_bleed1_final_cort, na.rm = TRUE)
+)
+```
+
+```{r}
+comp_base <- smooth_diff(bleed1_int_gamm$gam, pdat_base, 'Female', 'Male', 'sex')
+comp_base$avgC_capture_day <- pdat_base$avgC_capture_day[pdat_base$sex == "Female"]
+comp_stress <- smooth_diff(bleed2_int_gamm$gam, pdat_stress_dex, 'Female', 'Male', 'sex')
+comp_stress$avgC_capture_day <- pdat_stress_dex$avgC_capture_day[pdat_stress_dex$sex == "Female"]
+comp_dex <- smooth_diff(bleed3_int_gamm$gam, pdat_stress_dex, 'Female', 'Male', 'sex')
+comp_dex$avgC_capture_day <- pdat_stress_dex$avgC_capture_day[pdat_stress_dex$sex == "Female"]
+```
+Create plots: 
+
+## Baseline Corticosterone
+```{r}
+base_diff <- ggplot(comp_base, aes(x = avgC_capture_day, y = diff)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = base_color) +
+  geom_line(size = 1, color = base_color) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(x = NULL, y = 'Difference in Baseline Corticosterone (Female - Male') +
+  theme_minimal()
+base_diff 
+```
+## Stress-induced corticosterone
+```{r}
+stress_diff <- ggplot(comp_stress, aes(x = avgC_capture_day, y = diff)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = stress_color) +
+  geom_line(size = 1, color = stress_color) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(x = NULL, y = 'Difference in Stress-Induced Corticosterone (Female - Male') +
+  theme_minimal()
+  
+stress_diff
+```
+
+## Post-dex corticosterone
+
+```{r}
+dex_diff <- ggplot(comp_dex, aes(x = avgC_capture_day, y = diff)) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = dex_color) +
+  geom_line(size = 1, color = dex_color) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(x = NULL, y = 'Difference in Post-dex Corticosterone (Female - Male') +
+  theme_minimal()
+
+dex_diff
+```
+
+Create one figure with all combined: 
+
+```{r}
+combined3 <- base_diff | stress_diff | dex_diff  # one row
+
+final_figure3 <- combined3 + plot_annotation(
+  caption = ("Average Daily Temperature (°C)")
+) &
+  theme(
+    plot.caption = element_text(hjust = 0.5, size = 14) 
+  )
+final_figure3
+```
 
