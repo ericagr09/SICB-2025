@@ -90,7 +90,7 @@ datacheck <- initial_vis %>%
 
 summary(datacheck$bleed2_latency) # check for anything weird in bleed 2
 
-summary(datacheck$bleed3_latency) # check for anything weird in bleed 2
+summary(datacheck$bleed3_latency) # check for anything weird in bleed 3
 
 # looks like there's a sample with a bleed3 latency of 183 and 177, so removing those (encounter key 262126065_2014_171 and 262125900_2014_171 respectively)
 
