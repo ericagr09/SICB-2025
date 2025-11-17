@@ -7,7 +7,7 @@ output: html_document
 
 # Environmental effects on corticosterone in nestling tree swallows
 
-### Last updated: November 13, 2025
+### Last updated: November 17, 2025
 
 ## Abstract:
 
@@ -56,8 +56,8 @@ stress_color <- "#BEAED4FF"
 dex_color <- "#FDC086FF"
 
 
-male_color = "#BEAED4FF" # maybe change these? 
-female_color = "#BF5B17FF"
+male_color = "#FDC086FF" # maybe change these? 
+female_color = "#386CB0FE"
 ```
 
 # Question 1: How does temperature influence nestling corticosterone levels?
@@ -94,7 +94,7 @@ base_cort_plot <- ggplot() +
   theme_classic() +
   scale_x_continuous(breaks = seq(0, 30, 10)) +
   xlim(c(13, 30)) +
-  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14), plot.margin = margin(15, 15, 15, 15))
 base_cort_plot
 ```
 
@@ -127,7 +127,7 @@ stress_cort_plot <- ggplot() +
   theme_classic() +
   scale_x_continuous(breaks = seq(0, 30, 10)) +
   xlim(c(13, 30)) +
-  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14), plot.margin = margin(15, 15, 15, 15))
 
 stress_cort_plot
 ```
@@ -162,7 +162,9 @@ dex_cort_plot <- ggplot() +
   theme_classic() +
   scale_x_continuous(breaks = seq(0, 30, 10)) +
   xlim(c(13, 30)) +
-  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14))
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14), plot.margin = margin(15, 15, 15, 15),
+)
+
 
 dex_cort_plot
 
@@ -178,6 +180,8 @@ theme(
     plot.caption = element_text(hjust = 0.5, size = 14) 
   )
 final_figure1
+ggsave("TablesFigures/Figure1.png",
+       plot = final_figure1, height = 5, width = 14)
 ```
 
 # Question 2: Do male and female nestlings differ in their corticosterone regulation
@@ -363,6 +367,8 @@ final_figure2 <- combined2 + plot_annotation(
   )
 final_figure2
 
+ggsave("TablesFigures/Figure2.png",
+       plot = final_figure2, height = 5, width = 14)
 ```
 
 ### Female / Male Comparision Plots 
@@ -429,12 +435,15 @@ Create plots:
 ## Baseline Corticosterone
 ```{r}
 base_diff <- ggplot(comp_base, aes(x = avgC_capture_day, y = diff)) +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = base_color) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, fill = base_color) +
   geom_line(size = 1, color = base_color) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   coord_cartesian(ylim = c(-1, 1)) +
   labs(x = NULL, y = 'Difference in Baseline Corticosterone (Female - Male') +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank()   # removes ALL grid lines
+  )
 base_diff 
 ```
 ## Stress-induced corticosterone
@@ -445,7 +454,10 @@ stress_diff <- ggplot(comp_stress, aes(x = avgC_capture_day, y = diff)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   coord_cartesian(ylim = c(-1, 1)) +
   labs(x = NULL, y = 'Difference in Stress-Induced Corticosterone (Female - Male') +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank()   # removes ALL grid lines
+  )
   
 stress_diff
 ```
@@ -459,7 +471,10 @@ dex_diff <- ggplot(comp_dex, aes(x = avgC_capture_day, y = diff)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   coord_cartesian(ylim = c(-1, 1)) +
   labs(x = NULL, y = 'Difference in Post-dex Corticosterone (Female - Male') +
-  theme_minimal()
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank()   # removes ALL grid lines
+  )
 
 dex_diff
 ```
@@ -476,5 +491,8 @@ final_figure3 <- combined3 + plot_annotation(
     plot.caption = element_text(hjust = 0.5, size = 14) 
   )
 final_figure3
+
+ggsave("TablesFigures/Figure3.png",
+       plot = final_figure3, height = 5, width = 14)
 ```
 
