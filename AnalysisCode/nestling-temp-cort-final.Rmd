@@ -35,7 +35,7 @@ Hypothesis 3:Females will showcase a stronger corticosterone response (across al
 
 
 ```{r setup, include=FALSE}
-pacman::p_load(gamm4, dplyr, lme4, MASS, lmerTest, here, DHARMa, MuMIn, mgcv, ggplot2, gratia, patchwork, ggeffects) # load packages 
+pacman::p_load(gamm4, dplyr, lme4, MASS, lmerTest, here, DHARMa, MuMIn, mgcv, ggplot2, gratia, patchwork, ggeffects, extrafont) # load packages 
 
 weather_df <- read.csv(here("IntermediateData", "weather_df.csv")) # load in data that was produced by scripts in the DataCuration code 
 weather_df$log_bleed1_final_cort <- log(weather_df$bleed1_final_cort) # log transform cort measures 
@@ -52,12 +52,15 @@ sex_df$sex <- as.factor(sex_df$sex) # convert sex to a factor for GAMMS
  # set colors for figures : ) from the color blind friendly palette Accent (https://journal.r-project.org/articles/RJ-2023-071/; https://emilhvitfeldt.github.io/r-color-palettes/discrete/RColorBrewer/Accent/)
 
 base_color <- "#386CB0FF"
-stress_color <- "#BEAED4FF"
+purple_color <- "#BEAED4FF"
 dex_color <- "#FDC086FF"
 
 
 male_color = "#FDC086FF" # maybe change these? 
 female_color = "#386CB0FE"
+
+loadfonts(device = "pdf")   # add font for figures
+
 ```
 
 # Question 1: How does temperature influence nestling corticosterone levels?
@@ -94,7 +97,7 @@ base_cort_plot <- ggplot() +
   theme_classic() +
   scale_x_continuous(breaks = seq(0, 30, 10)) +
   xlim(c(13, 30)) +
-  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14), plot.margin = margin(15, 15, 15, 15))
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12),axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15, 15, 15, 15))
 base_cort_plot
 ```
 
@@ -121,13 +124,13 @@ stress_cort <- draw(bleed2_weather_gamm4$gam, term = "avgC_capture_day")$data %>
 
 stress_cort_plot <- ggplot() +
   geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
-  geom_line(data = stress_cort, aes(x = avgC_capture_day, y = fit), color = stress_color, linetype = "solid", size = 0.3) +
-  geom_ribbon(data = stress_cort, aes(x = avgC_capture_day, ymin = cil, ymax = ciu), fill = stress_color, alpha = 0.4) +
+  geom_line(data = stress_cort, aes(x = avgC_capture_day, y = fit), color = purple_color, linetype = "solid", size = 0.3) +
+  geom_ribbon(data = stress_cort, aes(x = avgC_capture_day, ymin = cil, ymax = ciu), fill = purple_color, alpha = 0.4) +
   labs(x = NULL, y = "Predicted Partial Stress-Induced Corticosterone") +
   theme_classic() +
   scale_x_continuous(breaks = seq(0, 30, 10)) +
   xlim(c(13, 30)) +
-  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14), plot.margin = margin(15, 15, 15, 15))
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15, 15, 15, 15))
 
 stress_cort_plot
 ```
@@ -158,11 +161,11 @@ dex_cort_plot <- ggplot() +
   geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
   geom_line(data = dex_cort, aes(x = avgC_capture_day, y = fit), color = dex_color, linetype = "solid", size = 0.3) +
   geom_ribbon(data = dex_cort, aes(x = avgC_capture_day, ymin = cil, ymax = ciu), fill = dex_color, alpha = 0.4) +
-  labs(x = NULL, y = "Predicted Partial Post-Dex Corticosterone") +
+  labs(x = NULL, y = "Predicted Partial Post-dexamethasone Corticosterone") +
   theme_classic() +
   scale_x_continuous(breaks = seq(0, 30, 10)) +
   xlim(c(13, 30)) +
-  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14), plot.margin = margin(15, 15, 15, 15),
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12), axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15, 15, 15, 15),
 )
 
 
@@ -174,10 +177,21 @@ Combine all plots together
 ```{r}
 combined <- base_cort_plot | stress_cort_plot | dex_cort_plot  # one row
 final_figure1 <- combined + plot_annotation(
-  caption = ("Average Daily Temperature (°C)")
-) &
-theme(
-    plot.caption = element_text(hjust = 0.5, size = 14) 
+    tag_levels = "A",    
+    caption = "Average Daily Temperature (°C)"
+  ) &
+  theme(
+    plot.tag = element_text(
+      size = 18,
+      family = "Helvetica",
+      face = "bold"
+    ),
+    plot.tag.position = c(0.25, 0.98),  # inside the panel (x,y in npc coords)
+    plot.caption = element_text(
+      hjust = 0.5,
+      size = 14,
+      family = "Helvetica"
+    )
   )
 final_figure1
 ggsave("TablesFigures/Figure1.png",
@@ -260,7 +274,7 @@ base_int <- ggplot(pred_base, aes(x = x, y = predicted, color = group, fill = gr
   theme(
     panel.grid = element_blank(),
     axis.text  = element_text(size = 12),
-    axis.title = element_text(size = 14),
+    axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15, 15, 15, 15),
     legend.title = element_blank(),
     legend.position = "top") +
   scale_color_manual(values = c(Female = female_color, Male = male_color))+
@@ -300,7 +314,7 @@ stress_int <- ggplot(pred_stress, aes(x = x, y = predicted, color = group, fill 
   theme_classic() +
   theme(panel.grid = element_blank(),
         axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14),
+    axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15, 15, 15, 15),
         legend.title = element_blank(),
         legend.position = "top") +
   scale_color_manual(values = c(Female = female_color, Male = male_color))+
@@ -334,22 +348,20 @@ pred_dex <- ggpredict(bleed3_int_gamm,
                          terms = c("avgC_capture_day [all]", "sex [Female, Male]"))
 
 
-
 dex_int <- ggplot(pred_dex, aes(x = x, y = predicted, color = group, fill = group)) +
   geom_abline(slope = 0, intercept = 0, linetype = "61", color = "gray75", size = 0.3) +
   geom_line(size = 1.0) +
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.4, color = NA) +
-  labs(x = NULL, y = "Predicted Post-dex Corticosterone") +
+  labs(x = NULL, y = "Predicted Post-dexamethasone Corticosterone") +
   theme_classic() +
   theme(panel.grid = element_blank(),
         axis.text = element_text(size = 12),
-        axis.title = element_text(size = 14),
+    axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15, 15, 15, 15),
         legend.title = element_blank(),
         legend.position = "top") +
   scale_color_manual(values = c(Female = female_color, Male = male_color))+
   scale_fill_manual(values = c(Female = female_color, Male = male_color))+
   scale_x_continuous(breaks = seq(13, 30, 5))
-
 dex_int
 ```
 
@@ -360,12 +372,23 @@ Combine all together
 combined2 <- base_int | stress_int | dex_int  # one row
 
 final_figure2 <- combined2 + plot_annotation(
-  caption = ("Average Daily Temperature (°C)")
-) &
+    tag_levels = "A",    
+    caption = "Average Daily Temperature (°C)"
+  ) &
   theme(
-    plot.caption = element_text(hjust = 0.5, size = 14) 
-  )
-final_figure2
+    plot.tag = element_text(
+      size = 18,
+      family = "Helvetica",
+      face = "bold"
+    ),
+    plot.tag.position = c(0.25, 0.85),  
+    plot.caption = element_text(
+      hjust = 0.5,
+      size = 14,
+      family = "Helvetica"
+    ))
+  
+  final_figure2
 
 ggsave("TablesFigures/Figure2.png",
        plot = final_figure2, height = 5, width = 14)
@@ -435,29 +458,25 @@ Create plots:
 ## Baseline Corticosterone
 ```{r}
 base_diff <- ggplot(comp_base, aes(x = avgC_capture_day, y = diff)) +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, fill = base_color) +
-  geom_line(size = 1, color = base_color) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = purple_color) +
+  geom_line(size = 1, color = purple_color) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   coord_cartesian(ylim = c(-1, 1)) +
-  labs(x = NULL, y = 'Difference in Baseline Corticosterone (Female - Male') +
-  theme_minimal() +
-  theme(
-    panel.grid = element_blank()   # removes ALL grid lines
-  )
+  labs(x = NULL, y = 'Estimated Difference in Baseline Corticosterone \n(Female - Male)') +
+  theme_classic() +
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12),axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15,15,15,15))
 base_diff 
 ```
 ## Stress-induced corticosterone
 ```{r}
 stress_diff <- ggplot(comp_stress, aes(x = avgC_capture_day, y = diff)) +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = stress_color) +
-  geom_line(size = 1, color = stress_color) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = purple_color) +
+  geom_line(size = 1, color = purple_color) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   coord_cartesian(ylim = c(-1, 1)) +
-  labs(x = NULL, y = 'Difference in Stress-Induced Corticosterone (Female - Male') +
-  theme_minimal() +
-  theme(
-    panel.grid = element_blank()   # removes ALL grid lines
-  )
+  labs(x = NULL, y = 'Difference in Stress-Induced Corticosterone\n(Female - Male)') +
+  theme_classic() +
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12),axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15,15,15,15))
   
 stress_diff
 ```
@@ -466,16 +485,13 @@ stress_diff
 
 ```{r}
 dex_diff <- ggplot(comp_dex, aes(x = avgC_capture_day, y = diff)) +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = dex_color) +
-  geom_line(size = 1, color = dex_color) +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.4, fill = purple_color) +
+  geom_line(size = 1, color = purple_color) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "gray") +
   coord_cartesian(ylim = c(-1, 1)) +
-  labs(x = NULL, y = 'Difference in Post-dex Corticosterone (Female - Male') +
-  theme_minimal() +
-  theme(
-    panel.grid = element_blank()   # removes ALL grid lines
-  )
-
+  labs(x = NULL, y = 'Difference in Post-dexamethasone Corticosterone\n(Female - Male)') +
+  theme_classic() +
+  theme(panel.grid = element_blank(), axis.text = element_text(size = 12),axis.title = element_text(size = 14, family = "Helvetica"), plot.margin = margin(15,15,15,15))
 dex_diff
 ```
 
@@ -483,13 +499,25 @@ Create one figure with all combined:
 
 ```{r}
 combined3 <- base_diff | stress_diff | dex_diff  # one row
-
-final_figure3 <- combined3 + plot_annotation(
-  caption = ("Average Daily Temperature (°C)")
-) &
+final_figure3 <- combined3 +
+  plot_annotation(
+    tag_levels = "A",    
+    caption = "Average Daily Temperature (°C)"
+  ) &
   theme(
-    plot.caption = element_text(hjust = 0.5, size = 14) 
+    plot.tag = element_text(
+      size = 18,
+      family = "Helvetica",
+      face = "bold"
+    ),
+    plot.tag.position = c(0.25, 0.98), 
+    plot.caption = element_text(
+      hjust = 0.5,
+      size = 14,
+      family = "Helvetica"
+    )
   )
+
 final_figure3
 
 ggsave("TablesFigures/Figure3.png",
